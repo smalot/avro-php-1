@@ -12,6 +12,7 @@ php:
 
 before_script:
 - composer self-update
+- composer update
 
 script:
 - COMPOSER=composer PHP=php make phpunit
