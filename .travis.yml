@@ -1,0 +1,32 @@
+dist: trusty
+sudo: required
+language: php
+
+services:
+- docker
+
+php:
+- '7.1'
+- '7.2'
+- '7.3'
+
+before_script:
+- make install-phars
+- composer self-update
+- make docker
+
+script:
+- COMPOSER=composer PHP=php make phpunit
+
+after_script:
+- make clean
+
+branches:
+  only:
+  - master
+  - '/^ft-.*/'
+  - '/^\d+\.\d+\.\d+$/'
+
+cache:
+  directories:
+  - $HOME/.composer/cache/files

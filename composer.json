@@ -3,10 +3,10 @@
     "description": "Avro schema encoder/decoder. Fork of rg/avro-php",
     "license": "Apache-2.0",
     "require": {
-        "php": ">=5.5.0"
+        "php": ">=7.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "4.8.36"
+        "phpunit/phpunit": "^5.0"
     },
     "suggest": {
         "ext-gmp": "Large integer support for 32-bit platforms."
