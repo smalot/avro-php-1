@@ -13,6 +13,7 @@ php:
 before_script:
 - make install-phars
 - composer self-update
+- make composer-update
 - make docker
 
 script:
