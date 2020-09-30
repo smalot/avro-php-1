@@ -68,16 +68,29 @@ class DataFileTest extends PHPUnit_Framework_TestCase
       mkdir(TEST_TEMP_DIR);
     $this->remove_data_files();
   }
+
   protected function tearDown()
   {
     $this->remove_data_files();
   }
 
-  public function test_write_read_nothing_round_trip()
+  public function provider()
   {
-    $data_file = $this->add_data_file('data-wr-nothing-null.avr');
+    $values = [];
+    foreach (AvroDataIO::valid_codecs() as $codec) {
+      $values[] = [$codec];
+    }
+    return $values;
+  }
+
+  /**
+   * @dataProvider provider
+   */
+  public function test_write_read_nothing_round_trip($codec)
+  {
+    $data_file = $this->add_data_file(sprintf('data-wr-nothing-null-%s.avr', $codec));
     $writers_schema = '"null"';
-    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema);
+    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema, $codec);
     $dw->close();
 
     $dr = AvroDataIO::open_file($data_file);
@@ -86,12 +99,15 @@ class DataFileTest extends PHPUnit_Framework_TestCase
     $this->assertEmpty($data);
   }
 
-  public function test_write_read_null_round_trip()
+  /**
+   * @dataProvider provider
+   */
+  public function test_write_read_null_round_trip($codec)
   {
-    $data_file = $this->add_data_file('data-wr-null.avr');
+    $data_file = $this->add_data_file(sprintf('data-wr-null-%s.avr', $codec));
     $writers_schema = '"null"';
     $data = null;
-    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema);
+    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema, $codec);
     $dw->append($data);
     $dw->close();
 
@@ -102,12 +118,15 @@ class DataFileTest extends PHPUnit_Framework_TestCase
     $this->assertEquals($data, $read_data);
   }
 
-  public function test_write_read_string_round_trip()
+  /**
+   * @dataProvider provider
+   */
+  public function test_write_read_string_round_trip($codec)
   {
-    $data_file = $this->add_data_file('data-wr-str.avr');
+    $data_file = $this->add_data_file(sprintf('data-wr-str-%s.avr', $codec));
     $writers_schema = '"string"';
     $data = 'foo';
-    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema);
+    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema, $codec);
     $dw->append($data);
     $dw->close();
 
@@ -118,15 +137,16 @@ class DataFileTest extends PHPUnit_Framework_TestCase
     $this->assertEquals($data, $read_data);
   }
 
-
-  public function test_write_read_round_trip()
+  /**
+   * @dataProvider provider
+   */
+  public function test_write_read_round_trip($codec)
   {
-
-    $data_file = $this->add_data_file('data-wr-int.avr');
+    $data_file = $this->add_data_file(sprintf('data-wr-int-%s.avr', $codec));
     $writers_schema = '"int"';
     $data = 1;
 
-    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema);
+    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema, $codec);
     $dw->append(1);
     $dw->close();
 
@@ -135,15 +155,17 @@ class DataFileTest extends PHPUnit_Framework_TestCase
     $read_data = reset($read_data);
     $dr->close();
     $this->assertEquals($data, $read_data);
-
   }
 
-  public function test_write_read_true_round_trip()
+  /**
+   * @dataProvider provider
+   */
+  public function test_write_read_true_round_trip($codec)
   {
-    $data_file = $this->add_data_file('data-wr-true.avr');
+    $data_file = $this->add_data_file(sprintf('data-wr-true-%s.avr', $codec));
     $writers_schema = '"boolean"';
     $datum = true;
-    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema);
+    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema, $codec);
     $dw->append($datum);
     $dw->close();
 
@@ -154,12 +176,15 @@ class DataFileTest extends PHPUnit_Framework_TestCase
     $this->assertEquals($datum, $read_data);
   }
 
-  public function test_write_read_false_round_trip()
+  /**
+   * @dataProvider provider
+   */
+  public function test_write_read_false_round_trip($codec)
   {
-    $data_file = $this->add_data_file('data-wr-false.avr');
+    $data_file = $this->add_data_file(sprintf('data-wr-false-%s.avr', $codec));
     $writers_schema = '"boolean"';
     $datum = false;
-    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema);
+    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema, $codec);
     $dw->append($datum);
     $dw->close();
 
@@ -169,12 +194,16 @@ class DataFileTest extends PHPUnit_Framework_TestCase
     $dr->close();
     $this->assertEquals($datum, $read_data);
   }
-  public function test_write_read_int_array_round_trip()
+
+  /**
+   * @dataProvider provider
+   */
+  public function test_write_read_int_array_round_trip($codec)
   {
-    $data_file = $this->add_data_file('data-wr-int-ary.avr');
+    $data_file = $this->add_data_file(sprintf('data-wr-int-ary-%s.avr', $codec));
     $writers_schema = '"int"';
     $data = array(10, 20, 30, 40, 50, 60, 70, 567, 89012345);
-    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema);
+    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema, $codec);
     foreach ($data as $datum)
       $dw->append($datum);
     $dw->close();
@@ -187,9 +216,12 @@ class DataFileTest extends PHPUnit_Framework_TestCase
                                 json_encode($data), json_encode($read_data)));
   }
 
-  public function test_differing_schemas_with_primitives()
+  /**
+   * @dataProvider provider
+   */
+  public function test_differing_schemas_with_primitives($codec)
   {
-    $data_file = $this->add_data_file('data-prim.avr');
+    $data_file = $this->add_data_file(sprintf('data-prim-%s.avr', $codec));
 
     $writer_schema = <<<JSON
 { "type": "record",
@@ -202,7 +234,7 @@ class DataFileTest extends PHPUnit_Framework_TestCase
 JSON;
     $data = array(array('username' => 'john', 'age' => 25, 'verified' => true),
                   array('username' => 'ryan', 'age' => 23, 'verified' => false));
-    $dw = AvroDataIO::open_file($data_file, 'w', $writer_schema);
+    $dw = AvroDataIO::open_file($data_file, 'w', $writer_schema, $codec);
     foreach ($data as $datum)
     {
       $dw->append($datum);
@@ -222,9 +254,12 @@ JSON;
     }
   }
 
-  public function test_differing_schemas_with_complex_objects()
+  /**
+   * @dataProvider provider
+   */
+  public function test_differing_schemas_with_complex_objects($codec)
   {
-    $data_file = $this->add_data_file('data-complex.avr');
+    $data_file = $this->add_data_file(sprintf('data-complex-%s.avr', $codec));
 
     $writers_schema = <<<JSON
 { "type": "record",
@@ -260,13 +295,13 @@ JSON;
                         "something_map" => array("a" => 2, "b" => 6),
                         "something_record" => array("inner" => 1),
                         "something_error" => array("code" => 401)));
-    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema);
+    $dw = AvroDataIO::open_file($data_file, 'w', $writers_schema, $codec);
     foreach ($data as $datum)
       $dw->append($datum);
     $dw->close();
 
     foreach (array('fixed', 'enum', 'record', 'error',
-                   'array' , 'map', 'union') as $s)
+                   'array', 'map', 'union') as $s)
     {
       $readers_schema = json_decode($writers_schema, true);
       $dr = AvroDataIO::open_file($data_file, 'r', json_encode($readers_schema));
